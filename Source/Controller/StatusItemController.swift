@@ -9,22 +9,21 @@
 import Cocoa
 
 class StatusItemController : NSObject {
-	let statusItem : NSStatusItem
-	let timerSource : dispatch_source_t
+	private let statusItem : NSStatusItem
+	private let timerSource : dispatch_source_t
 	
 	override init() {
 		statusItem = NSStatusBar.systemStatusBar().statusItemWithLength(NSVariableStatusItemLength)
 		statusItem.menu = NSMenu()
 		statusItem.enabled = true
 
-		timerSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))
+		timerSource = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue())
 		status = BrctlStatus(appStates: [])
 		
 		super.init()
 
 		// Setup menu
 		statusItem.target = self
-		statusItem.menu?.addItemWithTitle("Quit", action: "quit:", keyEquivalent: "")
 		
 		// Set up timer
 		dispatch_source_set_timer(timerSource, DISPATCH_TIME_NOW, NSEC_PER_SEC, NSEC_PER_SEC)
@@ -49,11 +48,7 @@ class StatusItemController : NSObject {
 			}
 			
 			// Remove outdated menu entries
-			if menu.itemArray.count > 2 {
-				for _ in 0...menu.itemArray.count-2 {
-					menu.removeItemAtIndex(0)
-				}
-			}
+			menu.removeAllItems()
 			
 			// Add new menu items
 			for appStatus in status.appStates {
@@ -75,13 +70,17 @@ class StatusItemController : NSObject {
 				newItem.enabled = false
 				newItem.image = status.transferStatus.menuImage
 				
-				menu.insertItem(newItem, atIndex: menu.itemArray.count-1)
+				menu.addItem(newItem)
 			}
 			
 			// Add separator before "quit" item
-			if (menu.itemArray.count > 1) {
-				menu.insertItem(NSMenuItem.separatorItem(), atIndex: menu.itemArray.count-1)
+			if (menu.itemArray.count > 0) {
+				menu.addItem(NSMenuItem.separatorItem())
 			}
+			
+			// Add other menu items
+			statusItem.menu?.addItemWithTitle("About", action: "orderFrontStandardAboutPanel:", keyEquivalent: "")
+			statusItem.menu?.addItemWithTitle("Quit", action: "quit:", keyEquivalent: "")
 		}
 	}
 }
