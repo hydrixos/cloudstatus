@@ -1,2 +1,2 @@
-# cloudstatus
-A simple tool tracking your iCloud Drive syncing status
+# Cloud Status
+A simple menubar status item tracking you iCloud Drive uploading / downloading status.
